@@ -22,6 +22,7 @@
     <link href="{{ url('/assets/cbt-malela') }}/assets/css/components/custom-sweetalert.css" rel="stylesheet"
         type="text/css" />
     <link href="{{ url('/assets/cbt-malela') }}/assets/css/scrollspyNav.css" rel="stylesheet" type="text/css" />
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
     <script src="{{ url('/assets/cbt-malela') }}/assets/js/libs/jquery-3.1.1.min.js"></script>
     {!! $plugin !!}
     <!-- END PAGE LEVEL PLUGINS/CUSTOM STYLES -->
@@ -254,6 +255,7 @@
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.9.0/js/bootstrap-datepicker.min.js"></script>
 </body>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 
 </html>

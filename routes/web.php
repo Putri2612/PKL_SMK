@@ -145,6 +145,19 @@ Route::get('/admin/getSiswaByKelas/{id_kelas}', [AdminController::class, 'getSis
 
 //==>Logbook
 Route::get('/admin/logbook', [AdminController::class, 'logbook'])->middleware('is_admin');
+Route::get('/admin/logbook/{id}', [AdminController::class, 'logbookSelect'])->middleware('is_admin');
+//==>Monitoring
+Route::get('/admin/monitoring', [AdminController::class, 'monitoring'])->middleware('is_admin');
+Route::get('/admin/monitoring/{id}', [AdminController::class, 'monitoringSelect'])->middleware('is_admin');
+//==>Kunjungan
+Route::get('/admin/kunjungan', [AdminController::class, 'kunjungan'])->middleware('is_admin');
+Route::get('/admin/edit_kunjungan', [AdminController::class, 'edit_kunjungan'])->name('ajaxkunjungan')->middleware('is_admin');
+Route::post('/admin/edit_kunjungan', [AdminController::class, 'edit_kunjungan_'])->middleware('is_admin');
+//==>Catatan DU/DI
+Route::get('/admin/catatan', [AdminController::class, 'catatan'])->middleware('is_admin');
+//==>Nilai
+Route::get('/admin/nilai', [AdminController::class, 'nilai'])->middleware('is_admin');
+Route::get('/admin/show_nilai/{nisn}', [AdminController::class, 'showNilai'])->middleware('is_admin');
 
 Route::get('/admin/sesi_belajar', [AdminController::class, 'sesi_belajar'])->middleware('is_admin');
 Route::post('/admin/tambah_sesi', [AdminController::class, 'tambah_sesi'])->middleware('is_admin');
@@ -184,6 +197,23 @@ Route::post('/guru/edit_password/{guru:id}', [GuruController::class, 'edit_passw
 Route::get('/guru/kelompok', [GuruController::class, 'kelompok'])->middleware('is_guru');
 //==>Logbook
 Route::get('/guru/logbook', [GuruController::class, 'logbook'])->middleware('is_guru');
+//==>Monitoring
+Route::get('/guru/monitoring', [GuruController::class, 'monitoring'])->middleware('is_guru');
+Route::post('/guru/tambah_monitoring', [GuruController::class, 'tambah_monitoring'])->middleware('is_guru');
+Route::get('/guru/edit_monitoring', [GuruController::class, 'edit_monitoring'])->name('ajaxmonitoring')->middleware('is_guru');
+Route::post('/guru/edit_monitoring', [GuruController::class, 'edit_monitoring_'])->middleware('is_guru');
+Route::get('/guru/hapus_monitoring/{monitoring:id}', [GuruController::class, 'hapus_monitoring'])->middleware('is_guru');
+//==>Kegiatan Kunjungan
+Route::get('/guru/kunjungan', [GuruController::class, 'kunjungan'])->middleware('is_guru');
+Route::post('/guru/tambah_kunjungan', [GuruController::class, 'tambah_kunjungan'])->middleware('is_guru');
+Route::get('/guru/edit_kunjungan', [GuruController::class, 'edit_kunjungan'])->name('ajaxkunjungan')->middleware('is_guru');
+Route::post('/guru/edit_kunjungan', [GuruController::class, 'edit_kunjungan_'])->middleware('is_guru');
+Route::get('/guru/hapus_kunjungan/{kunjungan:id}', [GuruController::class, 'hapus_kunjungan'])->middleware('is_guru');
+//==>Catatan DU/DI
+Route::get('/guru/catatan', [GuruController::class, 'catatan'])->middleware('is_guru');
+//==>Nilai
+Route::get('/guru/nilai', [GuruController::class, 'nilai'])->middleware('is_guru');
+Route::get('/guru/show_nilai/{siswa_nisn}', [GuruController::class, 'showNilai'])->middleware('is_guru');
 
 // END ROUTE GURU
 
@@ -214,6 +244,23 @@ Route::post('/kaprog/edit_kelompok', [KaprogController::class, 'edit_kelompok_']
 
 //==>Logbook
 Route::get('/kaprog/logbook', [KaprogController::class, 'logbook'])->middleware('is_kaprog');
+//==>Monitoring
+Route::get('/kaprog/monitoring', [KaprogController::class, 'monitoring'])->middleware('is_kaprog');
+Route::post('/kaprog/tambah_monitoring', [KaprogController::class, 'tambah_monitoring'])->middleware('is_kaprog');
+Route::get('/kaprog/edit_monitoring', [KaprogController::class, 'edit_monitoring'])->name('ajaxmonitoring')->middleware('is_kaprog');
+Route::post('/kaprog/edit_monitoring', [KaprogController::class, 'edit_monitoring_'])->middleware('is_kaprog');
+Route::get('/kaprog/hapus_monitoring/{monitoring:id}', [KaprogController::class, 'hapus_monitoring'])->middleware('is_kaprog');
+//==>Kegiatan Kunjungan
+Route::get('/kaprog/kunjungan', [KaprogController::class, 'kunjungan'])->middleware('is_kaprog');
+Route::post('/kaprog/tambah_kunjungan', [KaprogController::class, 'tambah_kunjungan'])->middleware('is_kaprog');
+Route::get('/kaprog/edit_kunjungan', [KaprogController::class, 'edit_kunjungan'])->name('ajaxkunjungan')->middleware('is_kaprog');
+Route::post('/kaprog/edit_kunjungan', [KaprogController::class, 'edit_kunjungan_'])->middleware('is_kaprog');
+Route::get('/kaprog/hapus_kunjungan/{kunjungan:id}', [KaprogController::class, 'hapus_kunjungan'])->middleware('is_kaprog');
+//==>Catatan DU/DI
+Route::get('/kaprog/catatan', [KaprogController::class, 'catatan'])->middleware('is_kaprog');
+//==>Nilai
+Route::get('/kaprog/nilai', [KaprogController::class, 'nilai'])->middleware('is_kaprog');
+Route::get('/kaprog/show_nilai/{nisn}', [KaprogController::class, 'showNilai'])->middleware('is_kaprog');
 
 // START ;; CHAT CONTROLLER
 Route::post('/chat/ambil/{key}', [ChatController::class, 'ambil']);
@@ -241,6 +288,13 @@ Route::post('/siswa/tambah_logbook', [SiswaController::class, 'tambah_logbook'])
 Route::get('/siswa/edit_logbook', [SiswaController::class, 'edit_logbook'])->name('ajaxlogbook')->middleware('is_siswa');
 Route::post('/siswa/edit_logbook', [SiswaController::class, 'edit_logbook_'])->middleware('is_siswa');
 
+//==>Monitoring
+Route::get('/siswa/monitoring', [SiswaController::class, 'monitoring'])->middleware('is_siswa');
+//==>Catatan DU/DI
+Route::get('/siswa/catatan', [SiswaController::class, 'catatan'])->middleware('is_siswa');
+//==>Nilai
+Route::get('/siswa/nilai', [SiswaController::class, 'nilai'])->middleware('is_siswa');
+
 // START::ROUTE DUDI
 Route::get('/dudi', [DuDiController::class, 'index'])->middleware('is_dudi');
 Route::get('/dudi/profile', [DuDiController::class, 'profile'])->middleware('is_dudi');
@@ -252,3 +306,14 @@ Route::get('/dudi/kelompok', [DuDiController::class, 'kelompok'])->middleware('i
 Route::get('/dudi/logbook', [DuDiController::class, 'logbook'])->middleware('is_dudi');
 Route::get('/dudi/edit_logbook', [DuDiController::class, 'edit_logbook'])->name('ajaxlogbook')->middleware('is_dudi');
 Route::post('/dudi/edit_logbook', [DuDiController::class, 'edit_logbook_'])->middleware('is_dudi');
+//==>Catatan DU/DI
+Route::get('/dudi/catatan', [DuDiController::class, 'catatan'])->middleware('is_dudi');
+Route::post('/dudi/tambah_catatan', [DuDiController::class, 'tambah_catatan'])->middleware('is_dudi');
+Route::get('/dudi/edit_catatan', [DuDiController::class, 'edit_catatan'])->name('ajaxcatatandudi')->middleware('is_dudi');
+Route::post('/dudi/edit_catatan', [DuDiController::class, 'edit_catatan_'])->middleware('is_dudi');
+Route::get('/dudi/hapus_catatan/{catatan_dudi:id}', [DuDiController::class, 'hapus_catatan'])->middleware('is_dudi');
+//==>Nilai
+Route::get('/dudi/nilai', [DuDiController::class, 'nilai'])->middleware('is_dudi');
+Route::get('/dudi/nilai/{siswa_nisn}', [DuDiController::class, 'nilaiSelect'])->middleware('is_dudi');
+Route::get('/dudi/show_nilai/{siswa_nisn}', [DuDiController::class, 'showNilai'])->middleware('is_dudi');
+Route::post('/dudi/tambah_nilai', [DuDiController::class, 'simpanNilai'])->middleware('is_dudi');

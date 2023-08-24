@@ -12,6 +12,10 @@ use App\Models\Jurusan;
 use App\Models\KelompokPkl;
 use App\Models\KelompokSiswa;
 use App\Models\Logbook;
+use App\Models\Nilai;
+use App\Models\CatatanDudi;
+use App\Models\Kunjungan;
+use App\Models\Monitoring;
 use App\Exports\GuruExport;
 use App\Imports\GuruImport;
 use App\Exports\SiswaExport;
@@ -694,16 +698,43 @@ class AdminController extends Controller
 
     
     //Logbook
-   public function logbook()
+    public function logbook()
+    {
+
+        return view('admin.logbook.index', [
+            'title' => 'Informasi Peserta PKL',
+            'plugin' => '
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+                <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+                <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+            ',
+            'menu' => [
+                'menu' => 'kegiatan',
+                'expanded' => 'kegiatan',
+                'collapse' => 'kegiatan',
+                'sub' => 'logbook',
+            ],
+            'admin' => Admin::firstWhere('id', session('admin')->id),
+            'jurusanList' => Jurusan::all()
+        ]);
+    }
+
+   public function logbookSelect($id)
    {
       $admin = Admin::firstWhere('id', session('admin')->id);
 
-      $logbook = Logbook::with(['kelompok.kelompok_pkl'])->get();
+      $logbook = Logbook::with(['kelompok.kelompok_pkl', 'siswa.jurusan']) // Pastikan Anda memiliki relasi yang tepat di model Logbook
+        ->whereHas('siswa.jurusan', function ($query) use ($id) {
+            $query->where('id', $id);
+        })
+        ->get();
+
 
       //dd($logbook);
       
-       return view('admin.logbook.index', [
-           'title' => 'Informasi DU/DI',
+       return view('admin.logbook.indexSelect', [
+           'title' => 'Informasi Logbook',
            'plugin' => '
                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
@@ -722,6 +753,227 @@ class AdminController extends Controller
            
        ]);
    }
+
+   //Monitoring
+   public function monitoring()
+    {
+
+        return view('admin.monitoring.index', [
+            'title' => 'Informasi Peserta PKL',
+            'plugin' => '
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+                <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+                <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+            ',
+            'menu' => [
+                'menu' => 'kegiatan',
+                'expanded' => 'kegiatan',
+                'collapse' => 'kegiatan',
+                'sub' => 'monitoring',
+            ],
+            'admin' => Admin::firstWhere('id', session('admin')->id),
+            'jurusanList' => Jurusan::all()
+        ]);
+    }
+   public function monitoringSelect($id)
+   {
+    $admin = Admin::firstWhere('id', session('admin')->id);
+    $monitoring = Monitoring::whereHas('siswa.jurusan', function ($query) use ($id) {
+        $query->where('id', $id);
+    })
+    ->get();
+
+    return view('admin.monitoring.indexSelect', [
+           'title' => 'Informasi Monitoring',
+           'plugin' => '
+               <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+               <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+               <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+               <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+           ',
+           'menu' => [
+                'menu' => 'kegiatan',
+                'expanded' => 'kegiatan',
+                'collapse' => 'kegiatan',
+                'sub' => 'monitoring',
+           ],
+           
+           'monitoring' => $monitoring,
+           'admin'=>$admin,
+       ]);
+   }
+
+   //Kunjungan
+   public function kunjungan()
+   {
+      $admin = Admin::firstWhere('id', session('admin')->id);
+
+      $kunjungan = Kunjungan::all();
+
+      //dd($logbook);
+      
+       return view('admin.kunjungan.index', [
+           'title' => 'Informasi Kunjungan',
+           'plugin' => '
+               <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+               <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+               <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+               <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+           ',
+           'menu' => [
+               'menu' => 'kegiatan',
+               'expanded' => 'kegiatan',
+               'collapse' => 'kegiatan',
+               'sub' => 'kunjungan',
+           ],
+           
+           'admin' =>$admin,
+           'kunjungan' => $kunjungan,
+           
+       ]);
+   }
+
+   public function edit_kunjungan(Request $request)
+   {
+       $id = $request->id;
+       $kunjungan = Kunjungan::find($id);
+   
+       if ($kunjungan) {
+           return response()->json($kunjungan);
+       } else {
+           return response()->json(['error' => 'Data not found'], 404);
+       }
+   }
+
+    public function edit_kunjungan_(Request $request)
+    {
+        //dd($request);  
+        $rules = [
+            'status' => 'required',
+        ];
+
+        $validate = $request->validate($rules);
+
+        Kunjungan::where('id', $request->input('id'))
+            ->update($validate);
+
+        return redirect('/admin/kunjungan')->with('pesan', "
+            <script>
+                swal({
+                    title: 'Berhasil!',
+                    text: 'data Kunjungan di edit!',
+                    type: 'success',
+                    padding: '2em'
+                })
+            </script>
+        ");
+    }
+
+    public function catatan()
+    {
+            $admin = Admin::firstWhere('id', session('admin')->id);
+        
+            $catatan = CatatanDudi::all();
+
+            return view('admin.catatan.index', [
+                'title' => 'Informasi Catatan',
+                'plugin' => '
+                    <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+                    <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+                    <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+                    <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+                ',
+                'menu' => [
+                        'menu' => 'kegiatan',
+                        'expanded' => 'kegiatan',
+                        'collapse' => 'kegiatan',
+                        'sub' => 'catatan',
+                ],
+                
+                'catatan' => $catatan,
+                'admin'=>$admin
+                
+            ]);
+    }
+
+    //NILAI
+    public function nilai()
+    {
+        $admin = Admin::firstWhere('id', session('admin')->id);
+
+        // Ambil data siswa, kelompok siswa, dan DUDI
+        $siswaList = Siswa::all();
+        foreach ($siswaList as $siswa) {
+            $kelompokSiswa = KelompokSiswa::where('siswa_nisn', $siswa->nisn)->first();
+            if ($kelompokSiswa) {
+                $kelompokPKL = KelompokPKL::find($kelompokSiswa->id_kelompok);
+                $dudi = $kelompokPKL->dudi;
+                $siswa->kelompokPKL = $kelompokPKL;
+                $siswa->dudi = $dudi;
+            }
+        }
+
+         //dd($siswaList); 
+         return view('admin.nilai.index', [
+            'title' => 'Informasi Catatan',
+            'plugin' => '
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+                <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+                <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+            ',
+            'menu' => [
+                    'menu' => 'kegiatan',
+                    'expanded' => 'kegiatan',
+                    'collapse' => 'kegiatan',
+                    'sub' => 'nilai',
+            ],
+            
+            'admin'=>$admin,
+            'siswa'=>$siswaList
+            
+        ]);
+    }
+
+    public function showNilai($nisn)
+    {
+        $siswa = Siswa::where('nisn', $nisn)->firstOrFail();
+        // Ambil data kelompok siswa berdasarkan siswa_nisn
+        $kelompokSiswa = KelompokSiswa::where('siswa_nisn', $nisn)->firstOrFail();
+        
+        // Ambil data DUDI berdasarkan id_kelompok dari tabel kelompok_pkl
+        $dudisiswa = KelompokPKL::where('id_kelompok', $kelompokSiswa->id_kelompok)
+                        ->with('dudi') 
+                        ->firstOrFail()
+                        ->dudi;
+        $nilai= Nilai::where('siswa_nisn', $nisn)->get();
+        //dd($nilai);
+    
+        return view('admin.nilai.indexSelect', [
+            'title' => 'Informasi Nilai',
+            'plugin' => '
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+                <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+                <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+            ',
+            'menu' => [
+                    'menu' => 'kegiatan',
+                    'expanded' => 'kegiatan',
+                    'collapse' => 'kegiatan',
+                    'sub' => 'nilai',
+            ],
+            
+            'admin'=>Admin::firstWhere('id', session('admin')->id),
+            'dudisiswa'=>$dudisiswa,
+            'siswa'=>$siswa,
+            'nilaiList'=>$nilai
+            
+        ]);
+    }
+
+
     //Kelas
     public function tahun_ajar()
     {

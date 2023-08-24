@@ -10,9 +10,9 @@ use App\Models\DaftarPKL;
 use App\Models\KelompokSiswa;
 use App\Models\KelompokPkl;
 use App\Models\Guru;
-use App\Models\Tugas;
-use App\Models\Materi;
-use App\Models\Notifikasi;
+use App\Models\Monitoring;
+use App\Models\CatatanDudi;
+use App\Models\Nilai;
 use App\Models\KelompokBelajar;
 use App\Models\KelompokBelajarSiswa;
 use App\Models\TahunAjar;
@@ -241,7 +241,7 @@ class SiswaController extends Controller
          $kelompoksiswa = KelompokSiswa::where('siswa_nisn', $siswa->nisn)->first();
          $logbook = Logbook::where('siswa_nisn', $siswa->nisn)->get();
          return view('siswa.logbook.index', [
-             'title' => 'Informasi DU/DI',
+             'title' => 'Informasi Logbook',
              'plugin' => '
                  <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
                  <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
@@ -330,5 +330,103 @@ class SiswaController extends Controller
             </script>
         ");
     }
+
+    //Monitoring
+   public function monitoring()
+   {
+    $siswa = Siswa::firstWhere('nisn', session('siswa')->nisn);
+
+    $monitoring = Monitoring::whereHas('siswa', function ($query) use ($siswa) {
+        $query->where('siswa_nisn', $siswa->nisn);
+        })->get();
+      //dd($monitoring);
+
+    return view('siswa.monitoring.index', [
+           'title' => 'Informasi Monitoring',
+           'plugin' => '
+               <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+               <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+               <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+               <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+           ',
+           'menu' => [
+               'menu' => 'kegiatan',
+               'expanded' => 'kegiatan',
+               'collapse' => 'kegiatan',
+               'sub' => 'monitoring',
+           ],
+           
+           'monitoring' => $monitoring,
+           'siswa'=>$siswa
+           
+       ]);
+   }
+
+   public function catatan()
+   {
+        $siswa = Siswa::firstWhere('nisn', session('siswa')->nisn);
+    
+        $catatan = CatatanDudi::whereHas('siswa', function ($query) use ($siswa) {
+            $query->where('siswa_nisn', $siswa->nisn);
+            })->get();
+
+
+        return view('siswa.catatan.index', [
+            'title' => 'Informasi Catatan',
+            'plugin' => '
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+                <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+                <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+            ',
+            'menu' => [
+                    'menu' => 'kegiatan',
+                    'expanded' => 'kegiatan',
+                    'collapse' => 'kegiatan',
+                    'sub' => 'catatan',
+            ],
+            
+            'catatan' => $catatan,
+            'siswa'=>$siswa
+            
+        ]);
+   }
+
+   public function nilai()
+   {
+        $siswa = Siswa::firstWhere('nisn', session('siswa')->nisn);
+         // Ambil data kelompok siswa berdasarkan siswa_nisn
+         $kelompokSiswa = KelompokSiswa::where('siswa_nisn', $siswa->nisn)->firstOrFail();
+        
+         // Ambil data DUDI berdasarkan id_kelompok dari tabel kelompok_pkl
+         $dudisiswa = KelompokPKL::where('id_kelompok', $kelompokSiswa->id_kelompok)
+                           ->with('dudi') 
+                           ->firstOrFail()
+                           ->dudi;
+        $nilai= Nilai::where('siswa_nisn', $siswa->nisn)->get();
+        //dd($nilai);
+      
+       return view('siswa.nilai.index', [
+           'title' => 'Informasi Nilai',
+           'plugin' => '
+               <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+               <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+               <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+               <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+           ',
+           'menu' => [
+                'menu' => 'kegiatan',
+                'expanded' => 'kegiatan',
+                'collapse' => 'kegiatan',
+                'sub' => 'nilai',
+           ],
+           
+           'siswa' => Siswa::firstWhere('nisn', session('siswa')->nisn),
+           'dudisiswa'=>$dudisiswa,
+           'siswa'=>$siswa,
+           'nilaiList'=>$nilai
+           
+       ]);
+   }
  
 }

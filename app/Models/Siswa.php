@@ -38,5 +38,15 @@ class Siswa extends Model
     {
         return $this->belongsTo(TahunAjar::class, 'tahun_ajar_id');
     }
+
+    public function dudi()
+    {
+        return $this->belongsTo(DUDI::class, 'dudi_id');
+    }
+
+    public function kelompokSiswa()
+    {
+        return $this->hasOne(KelompokSiswa::class, 'siswa_nisn', 'nisn');
+    }
     
 }

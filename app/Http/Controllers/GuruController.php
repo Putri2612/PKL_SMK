@@ -6,11 +6,14 @@ use App\Models\Guru;
 use App\Models\Gurukelas;
 use App\Models\Kelas;
 use App\Models\Siswa;
-use App\Models\Sesi;
+use App\Models\Monitoring;
+use App\Models\Kunjungan;
+use App\Models\CatatanDudi;
 use App\Models\TahunAjar;
 use App\Models\KelompokPkl;
 use App\Models\KelompokSiswa;
 use App\Models\Logbook;
+use App\Models\Nilai;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
@@ -148,12 +151,15 @@ class GuruController extends Controller
    {
       $guru = Guru::firstWhere('nip', session('guru')->nip);
 
-      $logbook = Logbook::with(['kelompok.kelompok_pkl'])->get();
+      $logbook = Logbook::with(['kelompok.kelompok_pkl'])->whereHas('kelompok.kelompok_pkl', function ($query) use ($guru) {
+        $query->where('guru_nip', $guru->nip);
+        })
+        ->get();
 
       //dd($logbook);
       
        return view('guru.logbook.index', [
-           'title' => 'Informasi DU/DI',
+           'title' => 'Informasi Logbook',
            'plugin' => '
                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
@@ -172,5 +178,357 @@ class GuruController extends Controller
            
        ]);
    }
+
+   //Monitoring
+   public function monitoring()
+   {
+    $guru = Guru::firstWhere('nip', session('guru')->nip);
+
+    $monitoring = Monitoring::whereHas('guru', function ($query) use ($guru) {
+        $query->where('guru_nip', $guru->nip);
+        })->get();
+      //dd($monitoring);
+
+    // Langkah 1: Dapatkan kelompok PKL yang terhubung dengan guru
+    $kelompokPKL = KelompokPKL::where('guru_nip', $guru->nip)->get();
+
+    $idKelompokList = $kelompokPKL->pluck('id_kelompok')->toArray();
+
+    // Langkah 3: Ambil siswa berdasarkan ID kelompok yang terhubung dengan guru
+    $siswaList = KelompokSiswa::whereIn('id_kelompok', $idKelompokList)->get();
+    //dd($siswaList); 
+    return view('guru.monitoring.index', [
+           'title' => 'Informasi Monitoring',
+           'plugin' => '
+               <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+               <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+               <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+               <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+           ',
+           'menu' => [
+                'menu' => 'kegiatan',
+                'expanded' => 'daftar',
+                'collapse' => 'kegiatan',
+                'sub' => 'monitoring',
+           ],
+           
+           'monitoring' => $monitoring,
+           'guru'=>$guru,
+           'siswa'=>$siswaList
+           
+       ]);
+   }
+
+   public function tambah_monitoring(Request $request)
+   {
+    //dd($request);   
+    $data = $request->validate([
+           'tanggal' => 'required|date',
+           'siswa_nisn' => 'required',
+           'guru_nip' => 'required',
+           'ke' => 'required',
+           'catatan' => 'required', 
+       ]);
+
+       $data['created_at'] = now();
+
+       Monitoring::insert($data);
+
+
+           return redirect('/guru/monitoring')->with('pesan', "
+               <script>
+                   swal({
+                       title: 'Berhasil!',
+                       text: 'data Monitoring di simpan!',
+                       type: 'success',
+                       padding: '2em'
+                   })
+               </script>
+           ");
+   }
+
+   public function edit_monitoring(Request $request)
+   {
+       $id = $request->id;
+       $monitoring = Monitoring::firstWhere('id', $id);
+       echo json_encode($monitoring);
+   }
+
+   public function edit_monitoring_(Request $request)
+   {
+       //dd($request);
+       $monitoring = Monitoring::firstWhere('id', $request->input('id'));
+       $rules = [
+            'tanggal' => 'required|date',
+            'siswa_nisn' => 'required',
+            'ke' => 'required',
+            'catatan' => 'required',
+       ];
+
+       $validate = $request->validate($rules);
+
+       Monitoring::where('id', $request->input('id'))
+           ->update($validate);
+
+       return redirect('/guru/monitoring')->with('pesan', "
+           <script>
+               swal({
+                   title: 'Berhasil!',
+                   text: 'data Monitoring di edit!',
+                   type: 'success',
+                   padding: '2em'
+               })
+           </script>
+       ");
+   }
+   public function hapus_monitoring($id)
+    {
+
+        Monitoring::where('id', $id)->delete();
+        return redirect('/guru/monitoring')->with('pesan', "
+            <script>
+                swal({
+                    title: 'Berhasil!',
+                    text: 'data monitoring berhasil di hapus!',
+                    type: 'success',
+                    padding: '2em'
+                })
+            </script>
+        ");
+    }
+
+   //Kunjungan
+   public function kunjungan()
+   {
+    $guru = Guru::firstWhere('nip', session('guru')->nip);
+
+    $kunjungan = Kunjungan::whereHas('guru', function ($query) use ($guru) {
+        $query->where('guru_nip', $guru->nip);
+        })->get();
+      //dd($monitoring);
+
+    // Langkah 1: Dapatkan kelompok PKL yang terhubung dengan guru
+    $kelompokPKL = KelompokPKL::where('guru_nip', $guru->nip)->get();
+    $idKelompokList = $kelompokPKL->pluck('id_kelompok')->toArray();
+
+    // Langkah 3: Ambil siswa berdasarkan ID kelompok yang terhubung dengan guru
+    $dudiList = KelompokPKL::whereIn('id_kelompok', $idKelompokList)->get();
+
+    return view('guru.kunjungan.index', [
+           'title' => 'Informasi Kegiatan Kunjungan',
+           'plugin' => '
+               <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+               <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+               <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+               <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+           ',
+           'menu' => [
+                'menu' => 'kegiatan',
+                'expanded' => 'daftar',
+                'collapse' => 'kegiatan',
+                'sub' => 'kunjungan',
+           ],
+           
+           'kunjungan' => $kunjungan,
+           'guru'=>$guru,
+           'dudi'=>$dudiList
+           
+       ]);
+   }
+
+   public function tambah_kunjungan(Request $request)
+   {
+    //dd($request);   
+    $data = $request->validate([
+           'tanggal' => 'required|date',
+           'dudi_id' => 'required',
+           'guru_nip' => 'required',
+           'catatan' => 'required',
+           'foto' => 'image|mimes:jpeg,png,jpg|max:2048',
+       ]);
+       $data['status'] = 2;
+       $data['created_at'] = now();
+        // Proses unggahan dan penyimpanan foto
+        if ($request->hasFile('foto')) {
+            $fotoPath = $request->file('foto')->store('foto_kunjungan');
+            $data['foto'] = $fotoPath; // Simpan path foto ke dalam data
+        }
+        //dd($data);
+
+       Kunjungan::insert($data);
+
+
+           return redirect('/guru/kunjungan')->with('pesan', "
+               <script>
+                   swal({
+                       title: 'Berhasil!',
+                       text: 'data Kunjungan di simpan!',
+                       type: 'success',
+                       padding: '2em'
+                   })
+               </script>
+           ");
+   }
+
+   public function edit_kunjungan(Request $request)
+   {
+       $id = $request->id;
+       $kunjungan = Kunjungan::firstWhere('id', $id);
+       echo json_encode($kunjungan);
+   }
+
+   public function edit_kunjungan_(Request $request)
+   {
+        $data = $request->validate([
+            'id' => 'required',
+            'tanggal' => 'required|date',
+            'dudi_id' => 'required',
+            'catatan' => 'required',
+            'edit_foto' => 'image|mimes:jpeg,png,jpg|max:2048', // Validasi untuk gambar
+        ]);
+
+        // Mendapatkan data kunjungan yang akan diubah
+        $kunjungan = Kunjungan::findOrFail($data['id']);
+
+        // Menangani unggahan gambar baru
+        if ($request->hasFile('edit_foto')) {
+            $fotoPath = $request->file('edit_foto')->store('foto_kunjungan');
+            $data['foto'] = $fotoPath; // Simpan path gambar ke dalam data
+        }
+
+        // Update data kunjungan
+        $kunjungan->update($data);
+
+       return redirect('/guru/kunjungan')->with('pesan', "
+           <script>
+               swal({
+                   title: 'Berhasil!',
+                   text: 'data Kunjungan di edit!',
+                   type: 'success',
+                   padding: '2em'
+               })
+           </script>
+       ");
+   }
+   public function hapus_kunjungan($id)
+    {
+
+        Kunjungan::where('id', $id)->delete();
+        return redirect('/guru/kunjungan')->with('pesan', "
+            <script>
+                swal({
+                    title: 'Berhasil!',
+                    text: 'data Kunjungan berhasil di hapus!',
+                    type: 'success',
+                    padding: '2em'
+                })
+            </script>
+        ");
+    }
+
+     //Catatan
+     public function catatan()
+     {
+        $guru = Guru::firstWhere('nip', session('guru')->nip);
+        
+        // Langkah 1: Dapatkan kelompok PKL yang terhubung dengan guru
+        $kelompokPKL = KelompokPKL::where('guru_nip', $guru->nip)->get();
+
+        // Ambil semua dudi_id dari kelompok PKL yang terhubung dengan guru
+        $dudiIds = $kelompokPKL->pluck('dudi_id');
+
+        // Langkah 2: Dapatkan catatan dari CatatanDudi yang cocok dengan dudi_id
+        $catatan = CatatanDudi::whereIn('dudi_id', $dudiIds)->get();
+
+          return view('guru.catatan.index', [
+              'title' => 'Informasi Catatan',
+              'plugin' => '
+                  <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+                  <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+                  <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+                  <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+              ',
+              'menu' => [
+                      'menu' => 'kegiatan',
+                      'expanded' => 'kegiatan',
+                      'collapse' => 'kegiatan',
+                      'sub' => 'catatan',
+              ],
+              
+              'catatan' => $catatan,
+              'guru' =>$guru
+              
+          ]);
+     }
+
+     //NILAI
+   public function nilai()
+   {
+        $guru = Guru::firstWhere('nip', session('guru')->nip);
+
+        // Ambil data siswa dari kelompok yang memiliki guru_nip yang sama dengan nip guru
+        $siswaList = KelompokSiswa::whereHas('kelompok_pkl', function ($query) use ($guru) {
+            $query->where('guru_nip', $guru->nip);
+        })->with('siswa', 'kelompok_pkl.dudi')->get();
+
+
+        //dd($siswaList); 
+        return view('guru.nilai.index', [
+            'title' => 'Informasi Catatan',
+            'plugin' => '
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+                <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+                <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+            ',
+            'menu' => [
+                    'menu' => 'kegiatan',
+                    'expanded' => 'daftar',
+                    'collapse' => 'kegiatan',
+                    'sub' => 'nilai',
+            ],
+            
+            'guru'=>$guru,
+            'siswa'=>$siswaList
+            
+        ]);
+   }
+
+   public function showNilai($siswa_nisn)
+    {
+        $siswa = Siswa::where('nisn', $siswa_nisn)->firstOrFail();
+        // Ambil data kelompok siswa berdasarkan siswa_nisn
+        $kelompokSiswa = KelompokSiswa::where('siswa_nisn', $siswa_nisn)->firstOrFail();
+        
+        // Ambil data DUDI berdasarkan id_kelompok dari tabel kelompok_pkl
+        $dudisiswa = KelompokPKL::where('id_kelompok', $kelompokSiswa->id_kelompok)
+                        ->with('dudi') 
+                        ->firstOrFail()
+                        ->dudi;
+        $nilai= Nilai::where('siswa_nisn', $siswa_nisn)->get();
+        //dd($nilai);
+        
+        return view('guru.nilai.indexSelect', [
+            'title' => 'Informasi Nilai',
+            'plugin' => '
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.css">
+                <link rel="stylesheet" type="text/css" href="' . url("/assets/cbt-malela") . '/plugins/table/datatable/dt-global_style.css">
+                <script src="' . url("/assets/cbt-malela") . '/plugins/table/datatable/datatables.js"></script>
+                <script src="https://cdn.datatables.net/fixedcolumns/4.1.0/js/dataTables.fixedColumns.min.js"></script>
+            ',
+            'menu' => [
+                    'menu' => 'kegiatan',
+                    'expanded' => 'daftar',
+                    'collapse' => 'kegiatan',
+                    'sub' => 'nilai',
+            ],
+            
+            'guru'=>Guru::firstWhere('nip', session('guru')->nip),
+            'dudisiswa'=>$dudisiswa,
+            'siswa'=>$siswa,
+            'nilaiList'=>$nilai
+            
+        ]);
+    }
 }
 

@@ -1,6 +1,6 @@
 @extends('template.main')
 @section('content')
-@include('template.navbar.admin')
+@include('template.navbar.guru')
 
 <!--  BEGIN CONTENT AREA  -->
 <div id="content" class="main-content">
@@ -11,25 +11,26 @@
                     <div class="row">
                         <div class="col-lg-12">
                             <div class="widget-heading">
-                                <h5 class="">Informasi Peserta PKL</h5>
-                                {{-- <a href="{{ url("/kaprog/ekspor_dudi") }}" class="btn btn-warning btn-sm mt-3" target="_blank">
-                                    <i data-feather="file-text"></i> Ekspor Excel
-                                </a> --}}
+                                <h5 class="">Nilai dan Sertifikat</h5>
                             </div>
                             <div class="table-responsive mt-4">
                                 <table id="datatable-table" class="table text-center text-nowrap">
                                     <thead>
                                         <tr>
-                                            <th>Jurusan</th>
-                                            <th>Opsi</th>
+                                            <th>NISN</th>
+                                            <th>Nama Siswa</th>
+                                            <th>DU/DI</th>
+                                            <th>Aksi</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        @foreach ($jurusanList as $jurusan)
+                                        @foreach ($siswa as $s)
                                             <tr>
-                                                <td>{{ $jurusan->nama_jurusan }}</td>
+                                                <td>{{ $s->siswa_nisn }}</td>
+                                                <td>{{ $s->siswa->nama_siswa }}</td>
+                                                <td>{{ optional($s->kelompok_pkl->dudi)->nama_dudi }}</td>
                                                 <td>
-                                                    <a href="{{ url('/admin/logbook/' . $jurusan->id) }}"
+                                                    <a href="{{ url('/guru/show_nilai/' . $s->siswa_nisn) }}"
                                                         class="btn btn-primary btn-sm"><span data-feather="eye"></span></a>
                                                 </td>
                                             </tr>

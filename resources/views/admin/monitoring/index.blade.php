@@ -29,7 +29,7 @@
                                             <tr>
                                                 <td>{{ $jurusan->nama_jurusan }}</td>
                                                 <td>
-                                                    <a href="{{ url('/admin/logbook/' . $jurusan->id) }}"
+                                                    <a href="{{ url('/admin/monitoring/' . $jurusan->id) }}"
                                                         class="btn btn-primary btn-sm"><span data-feather="eye"></span></a>
                                                 </td>
                                             </tr>

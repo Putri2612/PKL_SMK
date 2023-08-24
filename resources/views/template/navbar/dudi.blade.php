@@ -52,12 +52,7 @@
                     <li class="{{ ($menu['sub'] == 'logbook') ? 'active' : ''; }}">
                         <a href="{{ url("/dudi/logbook") }}"> Logbook PKL </a>
                     </li>
-                    <li class="{{ ($menu['sub'] == 'monitoring') ? 'active' : ''; }}">
-                        <a href="{{ url("/dudi/monitoring") }}"> Monitoring PKL </a>
-                    </li>
-                    <li class="{{ ($menu['sub'] == 'kunjungan') ? 'active' : ''; }}">
-                        <a href="{{ url("/dudi/kunjungan") }}"> Kegiatan Kunjungan </a>
-                    </li>
+
                     <li class="{{ ($menu['sub'] == 'catatan') ? 'active' : ''; }}">
                         <a href="{{ url("/dudi/catatan") }}"> Catatan DU/DI </a>
                     </li>
